@@ -27,6 +27,11 @@ describe('CRUD de Usuários', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejeita criação com campos em branco', async () => {
+    const res = await request(app).post('/api/users').send({ nome: '   ', email: '   ' });
+    expect(res.status).toBe(400);
+  });
+
   it('rejeita criação sem corpo', async () => {
     const res = await request(app).post('/api/users');
     expect(res.status).toBe(400);
@@ -62,6 +67,31 @@ describe('CRUD de Usuários', () => {
   it('retorna 404 ao atualizar id inexistente', async () => {
     const res = await request(app).put('/api/users/999').send({ nome: 'X' });
     expect(res.status).toBe(404);
+  });
+
+  it('rejeita atualização com nome em branco', async () => {
+    const u = await User.create({ nome: 'Ana', email: 'a@x.com' });
+    const res = await request(app).put(`/api/users/${u.id}`).send({ nome: '   ' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejeita atualização com email em branco', async () => {
+    const u = await User.create({ nome: 'Ana', email: 'a@x.com' });
+    const res = await request(app).put(`/api/users/${u.id}`).send({ email: '   ' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejeita atualização sem dados válidos', async () => {
+    const u = await User.create({ nome: 'Ana', email: 'a@x.com' });
+    const res = await request(app).put(`/api/users/${u.id}`).send({ extra: 'valor' });
+    expect(res.status).toBe(400);
+  });
+
+  it('actualiza email do usuário', async () => {
+    const u = await User.create({ nome: 'Ana', email: 'a@x.com' });
+    const res = await request(app).put(`/api/users/${u.id}`).send({ email: '   ana@nova.com   ' });
+    expect(res.status).toBe(200);
+    expect(res.body.email).toBe('ana@nova.com');
   });
 
   it('remove usuário', async () => {
